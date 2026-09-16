@@ -141,7 +141,7 @@ export default function HomePage() {
         <div className="hero-banner-inner">
           <div className="badge-status-light">
             <span className="pulse-dot-light"></span>
-            Votação Aberta 2026 — Plataforma Nacional de Transparência
+            Este sistema foi desenvolvido por um Anônimo
           </div>
           <h1 className="hero-title-full">
             <span>Brasil</span> de Olhos Abertos
