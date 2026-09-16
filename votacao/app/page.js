@@ -141,7 +141,7 @@ export default function HomePage() {
         <div className="hero-banner-inner">
           <div className="badge-status-light">
             <span className="pulse-dot-light"></span>
-            Este sistema foi desenvolvido por um Anônimo
+            Este sistema não pertence a nenhum órgão governamental
           </div>
           <h1 className="hero-title-full">
             <span>Brasil</span> de Olhos Abertos
