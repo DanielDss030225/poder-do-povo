@@ -1,9 +1,11 @@
 import { Pool } from 'pg';
 
-const connectionString = 'postgresql://neondb_owner:npg_ont9XcUaqmV5@ep-winter-pine-acfzkbwc-pooler.sa-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require';
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is not set. Check your .env file.');
+}
 
 const pool = new Pool({
-  connectionString,
+  connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
   }

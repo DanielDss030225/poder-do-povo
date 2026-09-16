@@ -1,6 +1,11 @@
 const { Pool } = require('pg');
 
-const connectionString = 'postgresql://neondb_owner:npg_ont9XcUaqmV5@ep-winter-pine-acfzkbwc-pooler.sa-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require';
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('Erro: DATABASE_URL não definida. Configure seu arquivo .env antes de executar o seed.');
+  process.exit(1);
+}
 
 const pool = new Pool({
   connectionString,

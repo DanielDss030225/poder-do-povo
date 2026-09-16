@@ -3,24 +3,24 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { renderMarkdown } from '@/lib/markdown';
-import { 
-  CrownIcon, 
-  HeartIcon, 
-  SearchIcon, 
-  VoteIcon, 
-  UserIcon, 
-  PhoneIcon, 
-  CloseIcon, 
-  ArrowRightIcon, 
-  CheckIcon, 
-  AlertIcon 
+import {
+  CrownIcon,
+  HeartIcon,
+  SearchIcon,
+  VoteIcon,
+  UserIcon,
+  PhoneIcon,
+  CloseIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  AlertIcon
 } from '@/components/Icons';
 
 export default function HomePage() {
   const [personagens, setPersonagens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Modal Voting State
   const [selectedPersonagem, setSelectedPersonagem] = useState(null);
   const [nomeCompleto, setNomeCompleto] = useState('');
@@ -134,9 +134,9 @@ export default function HomePage() {
             <span className="pulse-dot"></span>
             Votação Aberta 2026
           </div>
-          <h1 className="hero-title">Decida o Futuro da Sua Comunidade</h1>
+          <h1 className="hero-title">Brasil de Olhos Abertos</h1>
           <p className="hero-subtitle">
-            Conheça os projetos, leia os planos de ação detalhados e registre seu voto nos representantes da sua preferência.
+            Registre sua intenção de voto e impeça a fraude nas urnas.
           </p>
         </section>
 
