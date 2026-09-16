@@ -167,7 +167,7 @@ export default function HomePage() {
 
           <div className="stats-pill">
             <VoteIcon size={18} color="var(--brazil-green)" />
-            <span>Total de Votos: <strong>{totalVotosGeral}</strong></span>
+            <span>Total de Votos: <strong>{totalVotosGeral.toLocaleString('pt-BR')}</strong></span>
           </div>
         </div>
 
@@ -192,6 +192,11 @@ export default function HomePage() {
           <div className="cards-grid">
             {filteredPersonagens.map((p, index) => {
               const isTop = index === 0 && p.total_votos > 0;
+              const votosFormatados = (p.total_votos || 0).toLocaleString('pt-BR');
+              const percentual = totalVotosGeral > 0
+                ? (((p.total_votos || 0) / totalVotosGeral) * 100).toFixed(1).replace('.', ',')
+                : '0,0';
+
               return (
                 <div className="card-personagem" key={p.id}>
                   {isTop && (
@@ -229,7 +234,7 @@ export default function HomePage() {
                   <div className="card-footer">
                     <div className="vote-count-pill">
                       <HeartIcon size={15} />
-                      <span>{p.total_votos || 0} {p.total_votos === 1 ? 'Voto' : 'Votos'}</span>
+                      <span>{votosFormatados} Votos ({percentual}%)</span>
                     </div>
                     <button className="btn-votar" onClick={() => handleOpenVoteModal(p)}>
                       <span>Votar</span>

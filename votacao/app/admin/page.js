@@ -382,48 +382,60 @@ export default function AdminPage() {
                       <th>Nome</th>
                       <th>Cargo</th>
                       <th>Votos Acumulados</th>
+                      <th>Porcentagem</th>
                       <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {personagens.map((p) => (
-                      <tr key={p.id}>
-                        <td style={{ width: '60px' }}>
-                          <img
-                            src={p.foto_url || PRESET_AVATARS[0]}
-                            alt={p.nome}
-                            style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--brazil-green-light)' }}
-                          />
-                        </td>
-                        <td>
-                          <strong style={{ color: 'var(--brazil-blue)' }}>{p.nome}</strong>
-                        </td>
-                        <td>
-                          <span className="badge-cargo">{p.cargo}</span>
-                        </td>
-                        <td>
-                          <strong style={{ color: 'var(--brazil-green-dark)', fontSize: '1.05rem' }}>{p.total_votos || 0} votos</strong>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button
-                              className="btn-icon"
-                              onClick={() => handleOpenEditForm(p)}
-                            >
-                              <EditIcon size={16} />
-                              <span>Editar</span>
-                            </button>
-                            <button
-                              className="btn-icon btn-icon-danger"
-                              onClick={() => handleDeletePersonagem(p.id, p.nome)}
-                            >
-                              <TrashIcon size={16} />
-                              <span>Deletar</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {personagens.map((p) => {
+                      const totalVotosGeral = personagens.reduce((sum, item) => sum + (item.total_votos || 0), 0);
+                      const votosFormatados = (p.total_votos || 0).toLocaleString('pt-BR');
+                      const percentual = totalVotosGeral > 0
+                        ? (((p.total_votos || 0) / totalVotosGeral) * 100).toFixed(1).replace('.', ',')
+                        : '0,0';
+
+                      return (
+                        <tr key={p.id}>
+                          <td style={{ width: '60px' }}>
+                            <img
+                              src={p.foto_url || PRESET_AVATARS[0]}
+                              alt={p.nome}
+                              style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--brazil-green-light)' }}
+                            />
+                          </td>
+                          <td>
+                            <strong style={{ color: 'var(--brazil-blue)' }}>{p.nome}</strong>
+                          </td>
+                          <td>
+                            <span className="badge-cargo">{p.cargo}</span>
+                          </td>
+                          <td>
+                            <strong style={{ color: 'var(--brazil-green-dark)', fontSize: '1.05rem' }}>{votosFormatados} votos</strong>
+                          </td>
+                          <td>
+                            <strong style={{ color: 'var(--brazil-blue)', fontSize: '0.95rem' }}>{percentual}%</strong>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button
+                                className="btn-icon"
+                                onClick={() => handleOpenEditForm(p)}
+                              >
+                                <EditIcon size={16} />
+                                <span>Editar</span>
+                              </button>
+                              <button
+                                className="btn-icon btn-icon-danger"
+                                onClick={() => handleDeletePersonagem(p.id, p.nome)}
+                              >
+                                <TrashIcon size={16} />
+                                <span>Deletar</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

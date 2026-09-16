@@ -50,7 +50,7 @@ export default function Navbar({ totalVotos = null }) {
         {totalVotos !== null && (
           <div className="mobile-total-pill">
             <VoteIcon size={14} />
-            <span>{totalVotos} votos</span>
+            <span>{totalVotos.toLocaleString('pt-BR')} votos</span>
           </div>
         )}
       </header>
