@@ -13,13 +13,17 @@ import {
   CloseIcon,
   ArrowRightIcon,
   CheckIcon,
-  AlertIcon
+  AlertIcon,
+  FileTextIcon
 } from '@/components/Icons';
 
 export default function HomePage() {
   const [personagens, setPersonagens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Proposal Side Drawer State
+  const [selectedProposalPersonagem, setSelectedProposalPersonagem] = useState(null);
 
   // Modal Voting State
   const [selectedPersonagem, setSelectedPersonagem] = useState(null);
@@ -28,15 +32,12 @@ export default function HomePage() {
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
-  // Fetch candidates from API
   const fetchPersonagens = async () => {
     try {
       setLoading(true);
       const res = await fetch('/api/personagens');
       const data = await res.json();
-      if (data.success) {
-        setPersonagens(data.data);
-      }
+      if (data.success) setPersonagens(data.data);
     } catch (err) {
       console.error('Erro ao carregar personagens:', err);
     } finally {
@@ -44,15 +45,11 @@ export default function HomePage() {
     }
   };
 
-  useEffect(() => {
-    fetchPersonagens();
-  }, []);
+  useEffect(() => { fetchPersonagens(); }, []);
 
-  // Format Phone mask (XX) XXXXX-XXXX
   const handlePhoneChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 11) value = value.slice(0, 11);
-
     if (value.length > 6) {
       value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
     } else if (value.length > 2) {
@@ -78,7 +75,7 @@ export default function HomePage() {
   const handleSubmitVote = async (e) => {
     e.preventDefault();
     if (!nomeCompleto.trim() || !telefone.trim()) {
-      setFeedback({ type: 'danger', message: 'Por favor, preencha seu Nome Completo e Telefone.' });
+      setFeedback({ type: 'danger', message: 'Preencha seu Nome Completo e Telefone.' });
       return;
     }
 
@@ -92,7 +89,7 @@ export default function HomePage() {
         body: JSON.stringify({
           personagem_id: selectedPersonagem.id,
           nome_completo: nomeCompleto,
-          telefone: telefone,
+          telefone,
         }),
       });
 
@@ -100,35 +97,48 @@ export default function HomePage() {
 
       if (data.success) {
         setFeedback({ type: 'success', message: data.message });
-        fetchPersonagens(); // Refresh vote count
-        setTimeout(() => {
-          handleCloseModal();
-        }, 2200);
+        fetchPersonagens();
+        setTimeout(() => handleCloseModal(), 2200);
       } else {
         setFeedback({ type: 'danger', message: data.error || 'Erro ao registrar voto.' });
       }
-    } catch (err) {
-      setFeedback({ type: 'danger', message: 'Ocorreu um erro inesperado ao enviar seu voto.' });
+    } catch {
+      setFeedback({ type: 'danger', message: 'Erro inesperado ao enviar seu voto.' });
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Filter personagens
   const filteredPersonagens = personagens.filter(p =>
     p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.cargo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Total votes calculate
   const totalVotosGeral = personagens.reduce((sum, p) => sum + (p.total_votos || 0), 0);
 
   return (
     <>
-      <Navbar />
+      <Navbar totalVotos={totalVotosGeral} />
+
+      {/* ===== MOBILE SEARCH BAR ===== */}
+      <div className="mobile-search-bar">
+        <div className="search-input-group">
+          <span className="search-icon">
+            <SearchIcon size={18} />
+          </span>
+          <input
+            type="text"
+            className="input-search"
+            placeholder="Buscar candidato..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
 
       <main className="main-layout">
-        {/* Hero Section */}
+
+        {/* ===== HERO SECTION ===== */}
         <section className="hero-banner">
           <div className="badge-status">
             <span className="pulse-dot"></span>
@@ -140,7 +150,7 @@ export default function HomePage() {
           </p>
         </section>
 
-        {/* Controls & Search */}
+        {/* ===== DESKTOP CONTROLS BAR ===== */}
         <div className="controls-bar">
           <div className="search-input-group">
             <span className="search-icon">
@@ -157,21 +167,25 @@ export default function HomePage() {
 
           <div className="stats-pill">
             <VoteIcon size={18} color="var(--brazil-green)" />
-            <span>Total de Votos Registrados: <strong>{totalVotosGeral}</strong></span>
+            <span>Total de Votos: <strong>{totalVotosGeral}</strong></span>
           </div>
         </div>
 
-        {/* Loading / Cards Grid */}
+        {/* ===== CANDIDATE CARDS ===== */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-            <h3>Carregando candidatos do banco de dados...</h3>
+          <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
+            <h3>Carregando candidatos...</h3>
           </div>
         ) : filteredPersonagens.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1.5px solid var(--border-color)' }}>
+          <div style={{
+            textAlign: 'center', padding: '3rem 1.5rem',
+            background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)',
+            border: '1.5px solid var(--border-color)'
+          }}>
             <AlertIcon size={40} color="var(--brazil-yellow)" />
             <h3 style={{ marginTop: '1rem' }}>Nenhum candidato encontrado.</h3>
             <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-              Acesse o Painel Admin para cadastrar novos candidatos.
+              Acesse o Painel Admin para cadastrar candidatos.
             </p>
           </div>
         ) : (
@@ -182,7 +196,7 @@ export default function HomePage() {
                 <div className="card-personagem" key={p.id}>
                   {isTop && (
                     <div className="top-rank-badge">
-                      <CrownIcon size={16} /> 1º Lugar
+                      <CrownIcon size={15} /> 1º Lugar
                     </div>
                   )}
 
@@ -201,25 +215,25 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    {/* Markdown Description */}
-                    <div
-                      className="markdown-content"
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(p.descricao) }}
-                    />
+                    {/* BOTÃO VER PROPOSTAS */}
+                    <button
+                      className="btn-propostas"
+                      onClick={() => setSelectedProposalPersonagem(p)}
+                    >
+                      <FileTextIcon size={18} />
+                      <span>Ver Propostas</span>
+                      <ArrowRightIcon size={16} />
+                    </button>
                   </div>
 
                   <div className="card-footer">
                     <div className="vote-count-pill">
-                      <HeartIcon size={16} />
+                      <HeartIcon size={15} />
                       <span>{p.total_votos || 0} {p.total_votos === 1 ? 'Voto' : 'Votos'}</span>
                     </div>
-
-                    <button
-                      className="btn-votar"
-                      onClick={() => handleOpenVoteModal(p)}
-                    >
+                    <button className="btn-votar" onClick={() => handleOpenVoteModal(p)}>
                       <span>Votar</span>
-                      <ArrowRightIcon size={18} />
+                      <ArrowRightIcon size={17} />
                     </button>
                   </div>
                 </div>
@@ -229,25 +243,81 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Voting Modal Dialog */}
+      {/* ===== SIDE DRAWER FOR PROPOSALS (SLIDE MENU LATERAL) ===== */}
+      {selectedProposalPersonagem && (
+        <div className="drawer-overlay" onClick={() => setSelectedProposalPersonagem(null)}>
+          <div className="drawer-content" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-header">
+              <div className="drawer-header-info">
+                <img
+                  src={selectedProposalPersonagem.foto_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
+                  alt={selectedProposalPersonagem.nome}
+                  style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--brazil-green)' }}
+                />
+                <div>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', color: 'var(--brazil-blue)' }}>
+                    {selectedProposalPersonagem.nome}
+                  </h3>
+                  <span className="badge-cargo">{selectedProposalPersonagem.cargo}</span>
+                </div>
+              </div>
+
+              <button className="modal-close-btn" style={{ position: 'static' }} onClick={() => setSelectedProposalPersonagem(null)}>
+                <CloseIcon size={18} />
+              </button>
+            </div>
+
+            <div className="drawer-body">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem', color: 'var(--brazil-green-dark)', fontWeight: '700' }}>
+                <FileTextIcon size={20} />
+                <span style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)' }}>Planos & Propostas de Governo</span>
+              </div>
+
+              <div
+                className="markdown-content"
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedProposalPersonagem.descricao) }}
+              />
+            </div>
+
+            <div className="drawer-footer">
+              <button
+                className="btn-votar"
+                style={{ width: '100%', justifyContent: 'center' }}
+                onClick={() => {
+                  const candidate = selectedProposalPersonagem;
+                  setSelectedProposalPersonagem(null);
+                  handleOpenVoteModal(candidate);
+                }}
+              >
+                <VoteIcon size={18} />
+                <span>Votar neste Candidato</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== VOTING MODAL (Bottom Sheet on mobile) ===== */}
       {selectedPersonagem && (
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-drag-handle" />
+
             <button className="modal-close-btn" onClick={handleCloseModal}>
-              <CloseIcon size={20} />
+              <CloseIcon size={18} />
             </button>
 
             <div className="modal-header">
               <h3 className="modal-title">Confirmar Voto</h3>
-              <p className="modal-subtitle">Você está registrando seu voto para:</p>
+              <p className="modal-subtitle">Você está votando para:</p>
               <div className="modal-target-badge">
-                {selectedPersonagem.nome} — ({selectedPersonagem.cargo})
+                {selectedPersonagem.nome} — {selectedPersonagem.cargo}
               </div>
             </div>
 
             {feedback && (
               <div className={`alert alert-${feedback.type}`}>
-                {feedback.type === 'success' ? <CheckIcon size={20} /> : <AlertIcon size={20} />}
+                {feedback.type === 'success' ? <CheckIcon size={19} /> : <AlertIcon size={19} />}
                 <span>{feedback.message}</span>
               </div>
             )}
@@ -255,8 +325,8 @@ export default function HomePage() {
             <form onSubmit={handleSubmitVote}>
               <div className="form-group">
                 <label className="form-label">
-                  <UserIcon size={16} color="var(--brazil-green-dark)" />
-                  <span>Seu Nome Completo *</span>
+                  <UserIcon size={15} color="var(--brazil-green-dark)" />
+                  <span>Nome Completo *</span>
                 </label>
                 <input
                   type="text"
@@ -266,13 +336,14 @@ export default function HomePage() {
                   onChange={(e) => setNomeCompleto(e.target.value)}
                   disabled={submitting}
                   required
+                  autoComplete="name"
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">
-                  <PhoneIcon size={16} color="var(--brazil-green-dark)" />
-                  <span>Seu Telefone com DDD *</span>
+                  <PhoneIcon size={15} color="var(--brazil-green-dark)" />
+                  <span>Telefone com DDD *</span>
                 </label>
                 <input
                   type="tel"
@@ -282,6 +353,8 @@ export default function HomePage() {
                   onChange={handlePhoneChange}
                   disabled={submitting}
                   required
+                  autoComplete="tel"
+                  inputMode="numeric"
                 />
               </div>
 
@@ -294,12 +367,8 @@ export default function HomePage() {
                 >
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  className="btn-submit"
-                  disabled={submitting}
-                >
-                  <VoteIcon size={18} />
+                <button type="submit" className="btn-submit" disabled={submitting}>
+                  <VoteIcon size={17} />
                   <span>{submitting ? 'Computando...' : 'Confirmar Voto'}</span>
                 </button>
               </div>

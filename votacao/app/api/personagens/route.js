@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query, initDb } from '@/lib/db';
+import { isAuthorized } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -29,6 +30,10 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ success: false, error: 'Acesso não autorizado. Faça login no Painel Admin.' }, { status: 401 });
+  }
+
   try {
     await initDb();
     const body = await request.json();
@@ -60,6 +65,10 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ success: false, error: 'Acesso não autorizado. Faça login no Painel Admin.' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { id, nome, cargo, descricao, foto_url } = body;
@@ -91,6 +100,10 @@ export async function PUT(request) {
 }
 
 export async function DELETE(request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ success: false, error: 'Acesso não autorizado. Faça login no Painel Admin.' }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

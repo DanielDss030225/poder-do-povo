@@ -3,6 +3,11 @@ import './globals.css';
 export const metadata = {
   title: 'Poder do Povo - Sistema Oficial de Votação',
   description: 'Plataforma interativa para consulta e votação em candidatos e líderes comunitários.',
+  icons: {
+    icon: '/icone.png',
+    shortcut: '/icone.png',
+    apple: '/icone.png',
+  },
 };
 
 export default function RootLayout({ children }) {

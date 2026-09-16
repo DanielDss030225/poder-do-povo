@@ -14,7 +14,8 @@ import {
   CheckIcon, 
   AlertIcon,
   VoteIcon,
-  ImageIcon
+  ImageIcon,
+  SettingsIcon
 } from '@/components/Icons';
 
 const PRESET_AVATARS = [
@@ -27,7 +28,15 @@ const PRESET_AVATARS = [
 ];
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState('personagens'); // 'personagens' | 'votos' | 'novo'
+  // Authentication State
+  const [authenticated, setAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [inputPassword, setInputPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loggingIn, setLoggingIn] = useState(false);
+
+  // Admin Dashboard State
+  const [activeTab, setActiveTab] = useState('personagens');
   const [personagens, setPersonagens] = useState([]);
   const [votos, setVotos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +50,73 @@ export default function AdminPage() {
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
-  // Fetch data
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  const checkSession = async () => {
+    try {
+      setCheckingAuth(true);
+      const res = await fetch('/api/admin/login');
+      const data = await res.json();
+      if (data.authenticated) {
+        setAuthenticated(true);
+        loadData();
+      } else {
+        setAuthenticated(false);
+      }
+    } catch {
+      setAuthenticated(false);
+    } finally {
+      setCheckingAuth(false);
+    }
+  };
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    if (!inputPassword.trim()) {
+      setLoginError('Digite a senha de administrador.');
+      return;
+    }
+
+    try {
+      setLoggingIn(true);
+      setLoginError('');
+
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: inputPassword }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setAuthenticated(true);
+        setInputPassword('');
+        loadData();
+      } else {
+        setLoginError(data.error || 'Senha incorreta.');
+      }
+    } catch {
+      setLoginError('Erro de conexão ao tentar fazer login.');
+    } finally {
+      setLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/login', { method: 'DELETE' });
+    } catch (err) {
+      console.error('Erro ao fazer logout:', err);
+    } finally {
+      setAuthenticated(false);
+      setPersonagens([]);
+      setVotos([]);
+    }
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -61,10 +136,6 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const handleOpenCreateForm = () => {
     setEditingId(null);
@@ -86,8 +157,8 @@ export default function AdminPage() {
     setActiveTab('novo');
   };
 
-  const handleDeletePersonagem = async (id, nome) => {
-    if (!confirm(`Tem certeza que deseja excluir o personagem "${nome}"? Todos os votos associados a ele também serão apagados.`)) {
+  const handleDeletePersonagem = async (id, nomeParam) => {
+    if (!confirm(`Tem certeza que deseja excluir o personagem "${nomeParam}"? Todos os votos associados a ele também serão apagados.`)) {
       return;
     }
 
@@ -100,7 +171,7 @@ export default function AdminPage() {
       } else {
         alert(data.error || 'Erro ao deletar personagem.');
       }
-    } catch (err) {
+    } catch {
       alert('Erro de conexão ao deletar personagem.');
     }
   };
@@ -145,12 +216,96 @@ export default function AdminPage() {
       } else {
         setFeedback({ type: 'danger', message: data.error || 'Erro ao salvar.' });
       }
-    } catch (err) {
+    } catch {
       setFeedback({ type: 'danger', message: 'Erro de conexão.' });
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <>
+        <Navbar />
+        <main className="main-layout" style={{ textAlign: 'center', padding: '5rem 1rem' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Verificando credenciais...</p>
+        </main>
+      </>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <>
+        <Navbar />
+        <main className="main-layout" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 'calc(80vh - 80px)' }}>
+          <div style={{
+            background: '#ffffff',
+            border: '2px solid var(--border-color)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '2.5rem 2rem',
+            maxWidth: '420px',
+            width: '100%',
+            boxShadow: 'var(--shadow-card)',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              background: 'var(--brazil-blue-light)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.25rem',
+              border: '2px solid rgba(0, 39, 118, 0.15)'
+            }}>
+              <SettingsIcon size={32} color="var(--brazil-blue)" />
+            </div>
+
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', color: 'var(--brazil-blue)', marginBottom: '0.4rem' }}>
+              Acesso Restrito
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.75rem' }}>
+              Digite a senha mestra para acessar o Painel Administrativo.
+            </p>
+
+            {loginError && (
+              <div className="alert alert-danger" style={{ textAlign: 'left' }}>
+                <AlertIcon size={18} />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleLoginSubmit}>
+              <div className="form-group" style={{ textAlign: 'left' }}>
+                <label className="form-label">Senha de Administrador</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Digite a senha..."
+                  value={inputPassword}
+                  onChange={(e) => setInputPassword(e.target.value)}
+                  disabled={loggingIn}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="btn-submit"
+                style={{ width: '100%', marginTop: '1.25rem', padding: '0.85rem' }}
+                disabled={loggingIn}
+              >
+                <span>{loggingIn ? 'Autenticando...' : 'Entrar no Painel'}</span>
+              </button>
+            </form>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
@@ -165,10 +320,19 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <button className="btn-votar" onClick={handleOpenCreateForm}>
-            <PlusIcon size={18} />
-            <span>Cadastrar Personagem</span>
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button className="btn-votar" onClick={handleOpenCreateForm}>
+              <PlusIcon size={18} />
+              <span>Cadastrar Personagem</span>
+            </button>
+            <button
+              className="btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.7rem 1.1rem' }}
+              onClick={handleLogout}
+            >
+              <span>Sair</span>
+            </button>
+          </div>
         </div>
 
         {/* Navigation Tabs */}

@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { query, initDb } from '@/lib/db';
+import { isAuthorized } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ success: false, error: 'Acesso não autorizado. Faça login no Painel Admin.' }, { status: 401 });
+  }
+
   try {
     await initDb();
     
