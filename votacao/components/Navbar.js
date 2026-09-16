@@ -13,9 +13,7 @@ export default function Navbar({ totalVotos = null }) {
       <nav className="navbar">
         <div className="nav-container">
           <Link href="/" className="brand-logo">
-            <div className="brand-icon">
-              <BrazilFlagIcon size={28} />
-            </div>
+
             <span>PODER DO POVO</span>
           </Link>
 

@@ -136,19 +136,23 @@ export default function HomePage() {
         </div>
       </div>
 
-      <main className="main-layout">
-
-        {/* ===== HERO SECTION ===== */}
-        <section className="hero-banner">
-          <div className="badge-status">
-            <span className="pulse-dot"></span>
-            Votação Aberta 2026
+      {/* ===== FULL-WIDTH HERO SECTION WITH CAPA.WEBP BACKGROUND ===== */}
+      <section className="hero-banner-full">
+        <div className="hero-banner-inner">
+          <div className="badge-status-light">
+            <span className="pulse-dot-light"></span>
+            Votação Aberta 2026 — Plataforma Nacional de Transparência
           </div>
-          <h1 className="hero-title">Brasil de Olhos Abertos</h1>
-          <p className="hero-subtitle">
-            Registre sua intenção de voto e impeça a fraude nas urnas.
+          <h1 className="hero-title-full">
+            <span>Brasil</span> de Olhos Abertos
+          </h1>
+          <p className="hero-subtitle-full">
+            Registre sua intenção de voto com segurança e ajude a construir a maior auditoria popular do país.
           </p>
-        </section>
+        </div>
+      </section>
+
+      <main className="main-layout">
 
         {/* ===== DESKTOP CONTROLS BAR ===== */}
         <div className="controls-bar">
@@ -246,6 +250,22 @@ export default function HomePage() {
             })}
           </div>
         )}
+
+        {/* ===== SECONDARY SHOWCASE BANNER (capa2.jpg) ===== */}
+        <section className="showcase-banner">
+          <img
+            src="/capa2.jpg"
+            alt="Democracia Transparente"
+            className="showcase-banner-img"
+          />
+          <div className="showcase-banner-content">
+            <h2 className="showcase-title">Democracia Digital & Transparência</h2>
+            <p className="showcase-text">
+              O Poder do Povo foi criado para conectar cidadãos aos seus representantes legítimos.
+              Participe da votação em tempo real, acompanhe estatísticas auditáveis e confira as propostas completas de cada candidato.
+            </p>
+          </div>
+        </section>
       </main>
 
       {/* ===== SIDE DRAWER FOR PROPOSALS (SLIDE MENU LATERAL) ===== */}
